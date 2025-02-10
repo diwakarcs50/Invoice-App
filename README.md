@@ -39,3 +39,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ```bash
 pnpm dlx prisma studio
 ```
+## Command For Syncing our prisma schema with Postgres database
+```bash
+pnpm dlx prisma db push
+```
