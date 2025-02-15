@@ -1,22 +1,42 @@
-import { DashboardBlocks } from "../components/DashboardBlocks"
-import { InvoiceGraph } from "../components/InvoiceGraph"
-import { signOut } from "../utils/auth"
-import { requireUser } from "../utils/hooks"
+import { Suspense } from "react";
+import { DashboardBlocks } from "../components/DashboardBlocks";
+import { EmptyState } from "../components/EmptyState";
+import { InvoiceGraph } from "../components/InvoiceGraph";
+import { RecentInvoices } from "../components/RecentInvoices";
+import { signOut } from "../utils/auth";
+import { prisma } from "../utils/db";
+import { requireUser } from "../utils/hooks";
+import { Skeleton } from "@/components/ui/skeleton";
 
+async function getData(userId: string) {
+  const data = await prisma.invoice.findMany({
+    where: {
+      userId: userId,
+    },
+    select: {
+      id: true,
+    },
+  });
+  return data;
+}
 
-
-
-export default async function DashboardRoute(){
-    const session = await requireUser()
+export default async function DashboardRoute() {
+  const session = await requireUser();
+  const data = await getData(session.user?.id as string);
   return (
     <>
-      <DashboardBlocks/>
-      <div className="grid gap-4 lg:grid-cols-3 md:gap-8">
-       <InvoiceGraph/>
-       <h1 className="bg-red-200 col-span-1">This is about 30%</h1>
-      </div>
-
+      {data.length < 1 ? (
+        <EmptyState title="No Invoices Found" description="Create a Invoice to view them here" 
+        buttonText="Create invoice" href="/dashboard/invoices/create"/>
+      ) : (
+        <Suspense fallback={<Skeleton className="w-full h-full flex-1"/>}>
+          <DashboardBlocks />
+          <div className="grid gap-4 lg:grid-cols-3 md:gap-8">
+            <InvoiceGraph />
+            <RecentInvoices />
+          </div>
+        </Suspense>
+      )}
     </>
- 
-  )
+  );
 }

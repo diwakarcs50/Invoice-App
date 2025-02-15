@@ -4,9 +4,11 @@ import { prisma } from "../utils/db";
 import { requireUser } from "../utils/hooks";
 import { formatCurrency } from "../utils/formatCurrency";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "./EmptyState";
 
 
 async function getData(userId:string){
+    // await new Promise((resolve)=>setTimeout(resolve,1000))
     const data = await prisma.invoice.findMany({
         where:{
             userId:userId,
@@ -33,34 +35,44 @@ export async function InvoiceList(){
 
 
     return (
+       <>
+       {data.length===0?(
+        <EmptyState title="No invoices found" 
+        description="Create a invoice to get started" 
+        buttonText="Create invoice" 
+        href="/dashboard/invoices/create" />
+       ):(
         <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Invoice ID</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {data.map((invoice)=>(
-                    <TableRow key={invoice.id}>
-                    <TableCell>#{invoice.invoiceNumber}</TableCell>
-                    <TableCell>{invoice.clientName}</TableCell>
-                    <TableCell>{formatCurrency({amount:invoice.total,currency:invoice.currency as any})}</TableCell>
-                    <TableCell><Badge>{invoice.status}</Badge></TableCell>
-                    <TableCell>{new Intl.DateTimeFormat('en-US',{
-                        dateStyle:"medium"
-                    }).format(invoice.createdAt)}</TableCell>
-                    <TableCell className="text-right">
-                        <InvoiceActions id={invoice.id} status={invoice.status}/>
-                    </TableCell>
-                   </TableRow>
+        <TableHeader>
+            <TableRow>
+                <TableHead>Invoice ID</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            {data.map((invoice)=>(
+                <TableRow key={invoice.id}>
+                <TableCell>#{invoice.invoiceNumber}</TableCell>
+                <TableCell>{invoice.clientName}</TableCell>
+                <TableCell>{formatCurrency({amount:invoice.total,currency:invoice.currency as any})}</TableCell>
+                <TableCell><Badge>{invoice.status}</Badge></TableCell>
+                <TableCell>{new Intl.DateTimeFormat('en-US',{
+                    dateStyle:"medium"
+                }).format(invoice.createdAt)}</TableCell>
+                <TableCell className="text-right">
+                    <InvoiceActions id={invoice.id} status={invoice.status}/>
+                </TableCell>
+               </TableRow>
 
-                ))}
-            </TableBody>
-        </Table>
+            ))}
+        </TableBody>
+    </Table>
+       )}
+       
+       </>
     )
 }

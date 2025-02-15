@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, CreditCard, DollarSign, IndianRupeeIcon, Users } from "lucide-react";
 import { prisma } from "../utils/db";
 import { requireUser } from "../utils/hooks";
+import { formatCurrency } from "../utils/formatCurrency";
 
 async function getData(userId:string){
     const [data,openInvoices,paidInvoices] = await Promise.all([
@@ -55,9 +56,11 @@ export async function DashboardBlocks(){
             </CardHeader>
             <CardContent> 
                 <h2 className="text-2xl font-bold">
-                  {data.reduce((acc,invoice)=> acc+invoice.total,0)}
+                  {formatCurrency({
+                    amount:data.reduce((acc,invoice)=> acc+invoice.total,0),currency:'INR'
+                  })}
                 </h2>
-                <p className="text-xs text-muted-foreground">Based On last 30 days</p>
+                <p className="text-xs text-muted-foreground">Based On total volume</p>
             </CardContent>
         </Card>
         <Card>
@@ -77,17 +80,17 @@ export async function DashboardBlocks(){
             </CardHeader>
             <CardContent>
                 <h2 className="text-2xl font-bold">+{paidInvoices.length}</h2>
-                <p className="text-xs text-muted-foreground">Total Invoices which have been paid</p>
+                <p className="text-xs text-muted-foreground">Total Invoices which are cleared</p>
             </CardContent>
         </Card>
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Open Invoices</CardTitle>
+                <CardTitle className="text-sm font-medium">Pending Invoices</CardTitle>
                 <Activity className="size-4 text-muted-foreground"/>
             </CardHeader>
             <CardContent>
                 <h2 className="text-2xl font-bold">+{openInvoices.length}</h2>
-                <p className="text-xs text-muted-foreground">Invoices which haven't been paid</p>
+                <p className="text-xs text-muted-foreground">Invoices which are pending</p>
             </CardContent>
         </Card>
 
